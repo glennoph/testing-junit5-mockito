@@ -9,8 +9,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SpecialitySDJpaServiceTest {
@@ -38,6 +42,19 @@ class SpecialitySDJpaServiceTest {
     @Test
     void delete() {
         System.out.println("delete");
-        service.delete(new Speciality());
+        Speciality speciality = new Speciality();
+        service.delete(speciality);
+        verify(specialtyRepositoryMock).delete(speciality); // arg match speciality obj
+//        verify(specialtyRepositoryMock).delete(any(Speciality.class)); // arg match any Speciality
+    }
+
+    @Test
+    void findById() {
+        Speciality speciality = new Speciality();
+        long id = 11L;
+        when(specialtyRepositoryMock.findById(id)).thenReturn(Optional.of(speciality));
+        Speciality foundSpecialty = service.findById(id);
+        assertNotNull(foundSpecialty);
+        verify(specialtyRepositoryMock).findById(id);
     }
 }
