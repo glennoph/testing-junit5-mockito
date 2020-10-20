@@ -13,8 +13,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SpecialitySDJpaServiceTest {
@@ -57,4 +56,13 @@ class SpecialitySDJpaServiceTest {
         assertNotNull(foundSpecialty);
         verify(specialtyRepositoryMock).findById(id);
     }
+
+    @Test
+    void testDoThrow() {
+        doThrow(new RuntimeException("test exception")).when(specialtyRepositoryMock).delete(any());
+        assertThrows(RuntimeException.class, () -> specialtyRepositoryMock.delete(new Speciality()));
+        verify(specialtyRepositoryMock).delete(any());
+    }
+
+
 }
