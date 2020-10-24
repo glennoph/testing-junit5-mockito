@@ -7,10 +7,7 @@ import guru.springframework.sfgpetclinic.services.OwnerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 
@@ -109,6 +106,7 @@ class OwnerControllerTest {
     void processFindFormWildcardArgCapture() {
         //given
         setupAnswer();
+        InOrder inOrder = inOrder(ownerServiceMock, modelMock);
 
         //when
         String viewRet = ownerControllerMock.processFindForm(owner1, bindingResultMock, modelMock);
@@ -116,6 +114,8 @@ class OwnerControllerTest {
         //then
         assertEquals(srchExpected1, argumentCaptor.getValue()); // check search arg
         assertEquals("redirect:/owners/11", viewRet); // check view returned
+        inOrder.verify(ownerServiceMock).findAllByLastNameLike(anyString());
+        //inOrder.verify(modelMock).addAttribute(anyString(), anyList()); // model not used in this test
     }
 
     @Test
@@ -135,6 +135,7 @@ class OwnerControllerTest {
     void processFindFormWildcardArgCaptureMultFound() {
         //given
         setupAnswer();
+        InOrder inOrder = inOrder(ownerServiceMock, modelMock);
 
         //when
         String viewRet = ownerControllerMock.processFindForm(owner3Mult1, bindingResultMock, modelMock);
@@ -142,6 +143,8 @@ class OwnerControllerTest {
         //then
         assertEquals(srchExpected3Mult, argumentCaptor.getValue()); // check search arg
         assertEquals("owners/ownersList", viewRet); // check view returned
+        inOrder.verify(ownerServiceMock).findAllByLastNameLike(anyString());
+        inOrder.verify(modelMock).addAttribute(anyString(), anyList());
     }
 
 
