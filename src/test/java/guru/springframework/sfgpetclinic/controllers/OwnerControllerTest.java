@@ -88,19 +88,20 @@ class OwnerControllerTest {
 
                     String srchArg = invocation.getArgument(0);
 
-                    if (srchArg.equals(srchExpected1)) {
-                        ownerList.add(owner1);
-                        return ownerList;
-                    } else if (srchArg.equals(srchExpected2NF)) {
-                        // do not add owner to list
-                        return  ownerList;
-                    } else if (srchArg.equals(srchExpected3Mult)) {
-                        ownerList.add(owner3Mult1);
-                        ownerList.add(owner3Mult2);
-                        return  ownerList;
+                    switch (srchArg) {
+                        case srchExpected1: // 1 owner
+                            ownerList.add(owner1);
+                            return ownerList;
+                        case srchExpected2NF: // no owners
+                            return ownerList;
+                        case srchExpected3Mult: // multiple
+                            ownerList.add(owner3Mult1);
+                            ownerList.add(owner3Mult2);
+                            return ownerList;
+                        default:
+                            throw new RuntimeException("setupAnswer invalid arg");
                     }
 
-                    throw new RuntimeException("setupAnswer: invalid argument");
                 } );
     }
 
