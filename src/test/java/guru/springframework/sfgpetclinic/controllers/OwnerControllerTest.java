@@ -25,6 +25,20 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OwnerControllerTest {
 
+    final String fname1 = "fname";
+    final String lname1 = "lname";
+    final String srchExpected1 = "%"+ lname1 +"%";
+    final Owner owner1 = new Owner(11L, fname1, lname1);
+
+    final String lname2NF = "not-found";
+    final String srchExpected2NF = "%"+ lname2NF +"%";
+    final Owner owner2NF = new Owner(22L, fname1, lname2NF);
+
+    final String lname3Mult = "mult-found";
+    final String srchExpected3Mult = "%"+ lname3Mult +"%";
+    final Owner owner3Mult1 = new Owner(331L, fname1, lname3Mult);
+    final Owner owner3Mult2 = new Owner(332L, "fname2", lname3Mult);
+
     @Mock
     OwnerService ownerServiceMock;
 
@@ -36,9 +50,6 @@ class OwnerControllerTest {
         System.out.println("OwnerControllerTest");
     }
 
-
-
-
     @Test
     void processCreationForm_hasErrors() {
         BindingResult resultMock = mock(BindingResult.class);
@@ -48,7 +59,6 @@ class OwnerControllerTest {
         assertEquals(form, "owners/createOrUpdateOwnerForm");
         verify(resultMock).hasErrors();
     }
-
 
     @Test
     void processCreationForm_noErrors() {
@@ -68,24 +78,70 @@ class OwnerControllerTest {
     ArgumentCaptor<String> argumentCaptor;
     @Mock
     BindingResult bindingResultMock;
+    @Mock
+    Model modelMock;
+
+    void setupAnswer() {
+        given(ownerServiceMock.findAllByLastNameLike(argumentCaptor.capture()))
+                .willAnswer(invocation -> {
+                    List<Owner> ownerList = new ArrayList<>();
+
+                    String srchArg = invocation.getArgument(0);
+
+                    if (srchArg.equals(srchExpected1)) {
+                        ownerList.add(owner1);
+                        return ownerList;
+                    } else if (srchArg.equals(srchExpected2NF)) {
+                        // do not add owner to list
+                        return  ownerList;
+                    } else if (srchArg.equals(srchExpected3Mult)) {
+                        ownerList.add(owner3Mult1);
+                        ownerList.add(owner3Mult2);
+                        return  ownerList;
+                    }
+
+                    throw new RuntimeException("setupAnswer: invalid argument");
+                } );
+    }
 
     @Test
     void processFindFormWildcardArgCapture() {
         //given
-        final String fname = "fname";
-        final String lname = "lname";
-        Owner owner = new Owner(11L, fname, lname );
-        List<Owner> ownerList = new ArrayList<>();
-        // capture argument of findAllByLastNameLike
-        given(ownerServiceMock.findAllByLastNameLike(argumentCaptor.capture()))
-                .willReturn(ownerList);
-        Model model = null;
+        setupAnswer();
 
         //when
-        String viewRet = ownerControllerMock.processFindForm(owner, bindingResultMock, model);
+        String viewRet = ownerControllerMock.processFindForm(owner1, bindingResultMock, modelMock);
 
         //then
-        assertEquals("%"+lname+"%", argumentCaptor.getValue());
-
+        assertEquals(srchExpected1, argumentCaptor.getValue()); // check search arg
+        assertEquals("redirect:/owners/11", viewRet); // check view returned
     }
+
+    @Test
+    void processFindFormWildcardArgCaptureNotFound() {
+        //given
+        setupAnswer();
+
+        //when
+        String viewRet = ownerControllerMock.processFindForm(owner2NF, bindingResultMock, modelMock);
+
+        //then
+        assertEquals(srchExpected2NF, argumentCaptor.getValue()); // check search arg
+        assertEquals("owners/findOwners", viewRet); // check view returned
+    }
+
+    @Test
+    void processFindFormWildcardArgCaptureMultFound() {
+        //given
+        setupAnswer();
+
+        //when
+        String viewRet = ownerControllerMock.processFindForm(owner3Mult1, bindingResultMock, modelMock);
+
+        //then
+        assertEquals(srchExpected3Mult, argumentCaptor.getValue()); // check search arg
+        assertEquals("owners/ownersList", viewRet); // check view returned
+    }
+
+
 }
