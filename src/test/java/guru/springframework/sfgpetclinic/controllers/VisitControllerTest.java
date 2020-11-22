@@ -3,6 +3,7 @@ package guru.springframework.sfgpetclinic.controllers;
 import guru.springframework.sfgpetclinic.fauxspring.Model;
 import guru.springframework.sfgpetclinic.model.Pet;
 import guru.springframework.sfgpetclinic.model.Visit;
+import guru.springframework.sfgpetclinic.services.PetService;
 import guru.springframework.sfgpetclinic.services.VisitService;
 import guru.springframework.sfgpetclinic.services.map.PetMapService;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +30,8 @@ class VisitControllerTest {
     @Mock
     VisitService visitServiceMock;
 
-    @Mock(lenient = true)
-    PetMapService petMapServiceMock;
+    @Mock
+    PetService petServiceMock;
 
     @InjectMocks
     VisitController visitControllerMock;
@@ -41,12 +42,12 @@ class VisitControllerTest {
     }
 
     @Test
-    @Disabled("npe")
     void loadPetWithVisitMock() {
         //given
-        Pet pet = new Pet(123L);
+        final long ID = 12345L;
+        Pet pet = new Pet(ID);
         Map<String, Object> model = new HashMap<>();
-        given(petMapServiceMock.findById(anyLong())).willReturn(pet);
+        given(petServiceMock.findById(anyLong())).willReturn(pet);
 
         //when
         Visit visit = visitControllerMock.loadPetWithVisit(123L, model);
@@ -54,6 +55,8 @@ class VisitControllerTest {
         //then
         assertNotNull(visit);
         assertNotNull(visit.getPet());
+        System.out.println("pet id="+visit.getPet().getId());
+        assertEquals(ID, visit.getPet().getId());
     }
 
 
@@ -62,21 +65,22 @@ class VisitControllerTest {
 
 
     @Test
-    @Disabled("npe")
     void loadPetWithVisitSpy() {
         //given
-        Pet pet = new Pet(123L);
-        petMapServiceSpy.save(pet);
+        final long ID = 123456L;
+        Pet pet = new Pet(ID);
+        petMapServiceSpy.save(pet); // save the pet
         Map<String, Object> model = new HashMap<>();
+
         // call real method findById
         given(petMapServiceSpy.findById(anyLong())).willCallRealMethod();
 
         //when
-        Visit visit = visitControllerMock.loadPetWithVisit(123L, model);
+        Visit visit = visitControllerMock.loadPetWithVisit(ID, model);
 
         //then
         assertNotNull(visit);
         assertNotNull(visit.getPet());
-        assertEquals(Optional.of(123L), java.util.Optional.ofNullable(visit.getPet().getId()));
+        assertEquals(Optional.of(ID), java.util.Optional.ofNullable(visit.getPet().getId()));
     }
 }
