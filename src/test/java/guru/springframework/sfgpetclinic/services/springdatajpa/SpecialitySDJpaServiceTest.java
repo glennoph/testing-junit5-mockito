@@ -44,8 +44,9 @@ class SpecialitySDJpaServiceTest {
         System.out.println("delete");
         Speciality speciality = new Speciality();
         service.delete(speciality);
-        verify(specialtyRepositoryMock).delete(speciality); // arg match speciality obj
-//        verify(specialtyRepositoryMock).delete(any(Speciality.class)); // arg match any Speciality
+        // either verify is ok, prob should not have both
+        verify(specialtyRepositoryMock).delete(speciality); // arg match speciality obj - more specific
+        verify(specialtyRepositoryMock).delete(any(Speciality.class)); // arg match any Speciality
     }
 
     @Test
