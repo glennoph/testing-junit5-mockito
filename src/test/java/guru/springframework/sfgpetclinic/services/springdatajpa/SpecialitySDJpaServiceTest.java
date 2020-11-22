@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 
@@ -88,6 +89,32 @@ class SpecialitySDJpaServiceTest {
         assertThrows(RuntimeException.class,
                 () -> service.delete(new Speciality())); // run service.delete()
         verify(specialtyRepositoryMock).delete(any());
+    }
+
+    @Test
+    void testSaveLambda() {
+        final String MATCH_PATTERN = "match";
+        Speciality specialityTest = new Speciality();
+        specialityTest.setDescription(MATCH_PATTERN);
+
+        final long ID = 1234L;
+        Speciality specialitySaved = new Speciality();
+        specialitySaved.setId(ID);
+
+        // argThat the description is equal to the match pattern
+        given(specialtyRepositoryMock.save(
+                argThat(arg ->
+                        arg.getDescription().equals(MATCH_PATTERN))
+        )).willReturn(specialitySaved);
+
+        //when
+        Speciality specialityReturned = service.save(specialityTest);
+
+        //then
+        verify(specialtyRepositoryMock).save(any());
+        assertNotNull(specialityReturned);
+        assertEquals(ID, specialityReturned.getId());
+        System.out.println("specialityReturned.getId="+specialityReturned.getId());
     }
 
 }
