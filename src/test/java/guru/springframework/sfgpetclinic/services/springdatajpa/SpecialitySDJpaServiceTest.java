@@ -61,15 +61,32 @@ class SpecialitySDJpaServiceTest {
 
     @Test
     void testDoThrow() {
-        doThrow(new RuntimeException("test exception")).when(specialtyRepositoryMock).delete(any());
-        assertThrows(RuntimeException.class, () -> specialtyRepositoryMock.delete(new Speciality()));
+        doThrow(new RuntimeException("test exception"))
+                .when(specialtyRepositoryMock).delete(any());
+        assertThrows(RuntimeException.class,
+                () -> service.delete(new Speciality())); // run service.delete()
+        verify(specialtyRepositoryMock).delete(any());
+    }
+
+    @Test
+    void testDoThrowTryCatch() {
+        doThrow(new RuntimeException("test exception"))
+                .when(specialtyRepositoryMock).delete(any());
+        try {
+            service.delete(new Speciality()); // run service.delete()
+            fail("did not throw exception");
+        } catch(RuntimeException ex) {
+            System.out.println(ex);
+        }
         verify(specialtyRepositoryMock).delete(any());
     }
 
     @Test
     void testWillThrow() {
-        willThrow(new RuntimeException("test ex")).given(specialtyRepositoryMock).delete(any());
-        assertThrows(RuntimeException.class, () -> specialtyRepositoryMock.delete(new Speciality()));
+        willThrow(new RuntimeException("test exception"))
+                .given(specialtyRepositoryMock).delete(any());
+        assertThrows(RuntimeException.class,
+                () -> service.delete(new Speciality())); // run service.delete()
         verify(specialtyRepositoryMock).delete(any());
     }
 
